@@ -1,7 +1,8 @@
 #include <iostream>
-
+#include "tetris.hpp"
 
 int main() {
-  std::cout << "tetris" << std::endl;
+  tetris::Tetris tetris(10, 20);
+  tetris.Run();
   return 0;
 }
