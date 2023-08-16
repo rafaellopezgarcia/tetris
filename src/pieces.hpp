@@ -33,18 +33,38 @@ public:
   Piece() : position(0,0), direction(Direction::UP), color(Color::BLUE) {
   }
 
+  virtual void Up() = 0;
+  virtual void Down() = 0;
+  virtual void Left() = 0;
+  virtual void Right() = 0;
+
   void Move(Direction direction) {
     if(direction == Direction::DOWN) {
-      ++position.y;
-    }
-    else if(direction == Direction::LEFT) {
-      --position.x;
-    }
-    else if(direction == Direction::RIGHT) {
       ++position.x;
     }
-    else if(direction == Direction::UP) {
+    else if(direction == Direction::LEFT) {
       --position.y;
+    }
+    else if(direction == Direction::RIGHT) {
+      ++position.y;
+    }
+    else if(direction == Direction::UP) {
+      --position.x;
+    }
+
+    for (auto & p : points) {
+      if(direction == Direction::DOWN) {
+        ++p.x;
+      }
+      else if(direction == Direction::LEFT) {
+        --p.y;
+      }
+      else if(direction == Direction::RIGHT) {
+        ++p.y;
+      }
+      else if(direction == Direction::UP) {
+        --p.x;
+      }
     }
   }
 
@@ -64,6 +84,14 @@ public:
     direction = clockwise_direction[ix];
   }
 
+  std::array<Point, 4> GetPoints() {
+    return points;
+  }
+
+  Point GetPostition() {
+    return position;
+  }
+
 protected:
   std::array<Point, 4> points;
 private:
@@ -80,33 +108,31 @@ private:
 // x
 
 
-class Square : public Piece{
+class Square : public Piece {
 public:
   // [][]
   // [][]
-  void Up() {
+  void Up() override {
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{1, 0};
     points[3] = Point{1, 1};
   }
 
-  void Left() {
+  void Left() override {
     Up();
   }
 
-  void Down() {
+  void Down() override {
     Up();
   }
 
-  void Right() {
+  void Right() override {
     Up();
   }
 };
 
-/*
-
-class J {
+class J : public Piece {
 public:
   void Up() {
     //   []
@@ -145,12 +171,9 @@ public:
     points[2] = Point{1, 1};
     points[3] = Point{1, 2};
   }
-
-private:
-  std::array<Point, 4> points;
 };
 
-class L {
+class L : public Piece {
 public:
   void Up() {
     // []
@@ -189,12 +212,9 @@ public:
     points[2] = Point{0, 2};
     points[3] = Point{1, 0};
   }
-
-private:
-  std::array<Point, 4> points;
 };
 
-class Line {
+class Line : public Piece {
 public:
   void Up() {
     // []
@@ -222,12 +242,9 @@ public:
   void Right() {
     Left();
   }
-
-private:
-  std::array<Point, 4> points;
 };
 
-class S {
+class S : public Piece {
 public:
   void Up() {
     //   [][]
@@ -255,12 +272,9 @@ public:
   void Right() {
     Left();
   }
-
-private:
-  std::array<Point, 4> points;
 };
 
-class T {
+class T : public Piece {
 public:
   void Up() {
     // [][][]
@@ -281,7 +295,7 @@ public:
     points[3] = Point{2, 0};
   }
 
-  void down() {
+  void Down() {
     //   []
     // [][][]
     points[0] = Point{0, 1};
@@ -290,7 +304,7 @@ public:
     points[3] = Point{1, 2};
   }
 
-  void right() {
+  void Right() {
     //   []
     // [][]
     //   []
@@ -299,12 +313,9 @@ public:
     points[2] = Point{1, 1};
     points[3] = Point{2, 1};
   }
-
-private:
-  std::array<Point, 4> points;
 };
 
-class Z {
+class Z : public Piece {
 public:
   void Up() {
     // [][]
@@ -332,13 +343,7 @@ public:
   void Right() {
     Left();
   }
-
-private:
-  std::array<Point, 4> points;
-};*/
-
-
-
+};
 
 /*
 bool Move(Piece piece, Direction direction) {
