@@ -2,7 +2,7 @@
 #include "tetris.hpp"
 
 int main() {
-  tetris::Tetris tetris(10, 20);
+  tetris::Tetris tetris(10, 15);
   tetris.Run();
   return 0;
 }
