@@ -10,6 +10,7 @@ class Screen {
 public:
   Screen(int width, int length) : width(width), length(length) {
     initscr();
+    keypad(stdscr, TRUE);
     int row, col;
     getmaxyx(stdscr,row,col);
     xoffset = row /2 - length/2;

@@ -3,6 +3,7 @@
 #include <memory>
 #include <thread>
 #include <random>
+#include <vector>
 
 #include "pieces.hpp"
 #include "board.hpp"
@@ -45,21 +46,9 @@ public:
         piece = std::make_shared<Z>();
       break;
     }
-
-    switch (directions[distrib_dir(gen)]) {
-      case Direction::DOWN:
-        piece->Down();
-      break;
-      case Direction::LEFT:
-        piece->Left();
-      break;
-      case Direction::RIGHT:
-        piece->Right();
-      break;
-      case Direction::UP:
-        piece->Up();
-      break;
-    }
+    piece = std::make_shared<Square>();
+    piece->SetOrientation(directions[distrib_dir(gen)]);
+    
     return piece;
   }
 
@@ -87,20 +76,39 @@ public:
     using namespace std::chrono; // nanoseconds, system_clock, seconds
     PieceSelector selector;
     piece = selector.Select();
-    
-    for (int i = 0; i < 100; ++i) {
-      
-      screen.Remove(piece);
-      board.Remove(piece->GetPoints());
-      bool update_piece = !TryToMove(Direction::DOWN);
-      screen.Add(piece);
-      board.Add(piece->GetPoints());
-      screen.Refresh();
+    curs_set(0);
+    screen.Add(piece);
+    board.Add(piece->GetPoints());
+    for (int i = 0; i < 500; ++i) {
+      int c = getch();
+      bool update_piece = false;
+      switch (c) {
+        case KEY_LEFT:
+        TryToMove(Direction::LEFT);
+        break;
+        case KEY_RIGHT:
+        TryToMove(Direction::RIGHT);
+        break;
+        case ' ':
+        update_piece = !TryToMove(Direction::DOWN);
+        break;
+        case KEY_UP:
+        TryToRotate(Orientation::COUNTERCLOCKWISE);
+        break;
+        case KEY_DOWN:
+        TryToRotate(Orientation::CLOCKWISE);
+        break;
 
-      sleep_for(milliseconds(300));
-      if (update_piece) {
-        piece = selector.Select();
       }
+      screen.Refresh();
+      //sleep_for(milliseconds(300));
+      if (update_piece) {
+        RemoveLines();
+        piece = selector.Select();
+        screen.Add(piece);
+        board.Add(piece->GetPoints());
+      }
+    
     }
   
     getch();
@@ -116,6 +124,8 @@ private:
 
   bool TryToMove(Direction direction) {
     bool can_move = true;
+    screen.Remove(piece);
+    board.Remove(piece->GetPoints());
     piece->Move(direction);
     if (!CanMove()) {
       if (direction == Direction::DOWN) {
@@ -132,7 +142,28 @@ private:
       }
       can_move = false;
     }
+    screen.Add(piece);
+    board.Add(piece->GetPoints());
     return can_move;
+  }
+
+  bool TryToRotate(Orientation orientation) {
+    bool can_rotate = true;
+    screen.Remove(piece);
+    board.Remove(piece->GetPoints());
+    piece->Rotate(orientation);
+    if (!CanMove()) {
+      if (orientation == Orientation::CLOCKWISE) {
+        piece->Rotate(Orientation::COUNTERCLOCKWISE);
+      }
+      else {
+        piece->Rotate(Orientation::CLOCKWISE);
+      }
+      can_rotate = false;
+    }
+    screen.Add(piece);
+    board.Add(piece->GetPoints());
+    return can_rotate;
   }
 
   bool CanMove() {
@@ -146,24 +177,46 @@ private:
     }
     return can_move;
   }
-  
-/*
- 
-  bool TryToRotate(Piece piece, Orientation orientation) {
-    bool can_rotate = true;
-    piece.Rotate(orientation);
-    if (!CanMove(piece)) {
-      if (orientation == Orientation::CLOCKWISE) {
-        piece.Rotate(Orientation::COUNTERCLOCKWISE);
+
+  void RemoveLines() {
+    std::vector<int> row_status(board.GetLength(), true);
+
+    for(const auto & p : piece->GetPoints()) {
+      int col = 0;
+      row_status[p.x] = false;
+      for(int col = 0; col < board.GetWidth(); ) {
+        if (board.FreeCell(p.x, col)) {
+          row_status[p.x] = true;
+          break;
+        }
+        ++col;
+      }
+    }
+    int j = board.GetLength() - 1;
+    for(int i = board.GetLength() - 1; i >= 0; --i) {
+      if (!row_status[i]) {
+        for (int col = 0; col < board.GetWidth(); ++col) {
+          board.Remove(i, col);
+          screen.Remove(i, col);
+        }
       }
       else {
-        piece.Rotate(Orientation::CLOCKWISE);
+        if (i != j) {
+          for (int col = 0; col < board.GetWidth(); ++col) {
+            if (board.Get(i, col) != Color::NONE){
+              board.Add(j, col);
+              screen.Add(j, col);
+            }
+            board.Remove(i, col);
+            screen.Remove(i, col);
+          }
+        }
+        --j;
       }
-      can_rotate = false;
     }
-    return can_rotate;
+
   }
-*/
+
 };
 
 

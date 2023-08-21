@@ -33,10 +33,18 @@ public:
   Piece() : position(0,0), direction(Direction::UP), color(Color::BLUE) {
   }
 
-  virtual void Up() = 0;
-  virtual void Down() = 0;
-  virtual void Left() = 0;
-  virtual void Right() = 0;
+  virtual void Up() {
+    direction = Direction::UP;
+  }
+  virtual void Down() {
+    direction = Direction::DOWN;
+  }
+  virtual void Left() {
+    direction = Direction::LEFT;
+  }
+  virtual void Right() {
+    direction = Direction::RIGHT;
+  }
 
   void Move(Direction direction) {
     if(direction == Direction::DOWN) {
@@ -68,21 +76,65 @@ public:
     }
   }
 
-  void Rotate(Orientation orientation) {
-    if (orientation == Orientation::CLOCKWISE) {
-      int ix = (static_cast<int>(direction) + 1) % clockwise_direction.size();
-      direction = clockwise_direction[ix];
+  void SetOrientation(Direction direction) {
+    this->direction = direction;
+    switch (direction) {
+      case Direction::DOWN:
+        Down();
+      break;
+      case Direction::LEFT:
+        Left();
+      break;
+      case Direction::RIGHT:
+        Right();
+      break;
+      case Direction::UP:
+        Up();
+      break;
     }
-    else {
-      int ix = (static_cast<int>(direction) - 1) % clockwise_direction.size();
-      direction = clockwise_direction[ix];
+
+    for (auto & p : points) {
+      p.x += position.x;
+      p.y += position.y;
     }
   }
 
-  void CounterClockwiseRotation() {
-    int ix = (static_cast<int>(direction) - 1) % clockwise_direction.size();
-    direction = clockwise_direction[ix];
+  void Rotate(Orientation orientation) {
+    if (orientation == Orientation::CLOCKWISE) {
+      switch (direction){
+        case Direction::DOWN:
+          SetOrientation(Direction::LEFT);
+          break;
+        case Direction::LEFT:
+          SetOrientation(Direction::UP);
+          break;
+        case Direction::UP:
+          SetOrientation(Direction::RIGHT);
+          break;
+        case Direction::RIGHT:
+          SetOrientation(Direction::DOWN);
+          break;
+      }
+    }
+
+    else {
+      switch (direction){
+        case Direction::DOWN:
+          SetOrientation(Direction::RIGHT);
+          break;
+        case Direction::RIGHT:
+          SetOrientation(Direction::UP);
+          break;
+        case Direction::UP:
+          SetOrientation(Direction::LEFT);
+          break;
+        case Direction::LEFT:
+          SetOrientation(Direction::DOWN);
+          break;
+      }
+    }
   }
+
 
   std::array<Point, 4> GetPoints() {
     return points;
@@ -98,7 +150,6 @@ private:
   Point position;
   Direction direction;
   Color color;
-  std::array<Direction, 4> clockwise_direction{Direction::UP, Direction::LEFT, Direction::DOWN, Direction::RIGHT};
 };
 
 // . . . . y
@@ -113,6 +164,7 @@ public:
   // [][]
   // [][]
   void Up() override {
+    Piece::Up();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{1, 0};
@@ -138,6 +190,7 @@ public:
     //   []
     //   []
     // [][]
+    Piece::Up();
     points[0] = Point{0, 1};
     points[1] = Point{1, 1};
     points[2] = Point{2, 0};
@@ -147,6 +200,7 @@ public:
   void Left() {
     // [][][]
     //     []
+    Piece::Left();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{0, 2};
@@ -157,6 +211,7 @@ public:
     // [][]
     // []
     // []
+    Piece::Down();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{1, 0};
@@ -166,6 +221,7 @@ public:
   void Right() {
     // []
     // [][][]
+    Piece::Right();
     points[0] = Point{0, 0};
     points[1] = Point{1, 0};
     points[2] = Point{1, 1};
@@ -179,6 +235,7 @@ public:
     // []
     // []
     // [][]
+    Piece::Up();
     points[0] = Point{0, 0};
     points[1] = Point{1, 0};
     points[2] = Point{2, 0};
@@ -188,6 +245,7 @@ public:
   void Left() {
     //     []
     // [][][]
+    Piece::Left();
     points[0] = Point{0, 2};
     points[1] = Point{1, 0};
     points[2] = Point{1, 1};
@@ -198,6 +256,7 @@ public:
     // [][]
     //   []
     //   []
+    Piece::Down();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{1, 1};
@@ -207,6 +266,7 @@ public:
   void Right() {
     // [][][]
     // []
+    Piece::Right();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{0, 2};
@@ -221,14 +281,16 @@ public:
     // []
     // []
     // []
+    Piece::Up();
     points[0] = Point{0, 0};
     points[1] = Point{1, 0};
     points[2] = Point{2, 0};
-    points[3] = Point{2, 1};
+    points[3] = Point{3, 0};
   }
 
   void Left() {
     // [][][][]
+    Piece::Left();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{0, 2};
@@ -249,6 +311,7 @@ public:
   void Up() {
     //   [][]
     // [][]
+    Piece::Up();
     points[0] = Point{0, 1};
     points[1] = Point{0, 2};
     points[2] = Point{1, 0};
@@ -259,9 +322,10 @@ public:
     // []
     // [][]
     //   []
+    Piece::Left();
     points[0] = Point{0, 0};
     points[1] = Point{1, 0};
-    points[2] = Point{1, 2};
+    points[2] = Point{1, 1};
     points[3] = Point{2, 1};
   }
 
@@ -279,6 +343,7 @@ public:
   void Up() {
     // [][][]
     //   []
+    Piece::Up();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{0, 2};
@@ -289,6 +354,7 @@ public:
     // []
     // [][]
     // []
+    Piece::Left();
     points[0] = Point{0, 0};
     points[1] = Point{1, 0};
     points[2] = Point{1, 1};
@@ -298,6 +364,7 @@ public:
   void Down() {
     //   []
     // [][][]
+    Piece::Down();
     points[0] = Point{0, 1};
     points[1] = Point{1, 0};
     points[2] = Point{1, 1};
@@ -308,6 +375,7 @@ public:
     //   []
     // [][]
     //   []
+    Piece::Right();
     points[0] = Point{0, 1};
     points[1] = Point{1, 0};
     points[2] = Point{1, 1};
@@ -320,6 +388,7 @@ public:
   void Up() {
     // [][]
     //   [][]
+    Piece::Up();
     points[0] = Point{0, 0};
     points[1] = Point{0, 1};
     points[2] = Point{1, 1};
@@ -330,6 +399,7 @@ public:
     //   []
     // [][]
     // []
+    Piece::Left();
     points[0] = Point{0, 1};
     points[1] = Point{1, 0};
     points[2] = Point{1, 1};
@@ -344,39 +414,5 @@ public:
     Left();
   }
 };
-
-/*
-bool Move(Piece piece, Direction direction) {
-  auto points = piece.points;
-  bool valid_move = true;
-  int cols;
-  int rows;
-  for (auto & p : points) {
-    if(direction == Direction::DOWN) {
-      ++p.y;
-    }
-    else if(direction == Direction::LEFT) {
-      --p.x;
-    }
-    else if(direction == Direction::RIGHT) {
-      ++p.x;
-    }
-    else if(direction == Direction::UP) {
-      --p.y;
-    }
-    if (invalid_cell(p.x, p.y) or occupied_cell(p.x, p.y)) {
-      valid_move = false;
-      break;
-    }
-  }
-  if (valid_move) {
-    piece.points = points;
-  }
-  return valid_move;
-}
-
-void Rotate(Piece piece, Orientation orientation) {
-  Move(piece, direction);
-}*/
 
 }

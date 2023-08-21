@@ -47,6 +47,18 @@ public:
     board[x][y] = Color::NONE;
   }
 
+  Color Get(int x, int y) {
+    return board[x][y];
+  }
+
+  int GetWidth() {
+    return width;
+  }
+
+  int GetLength() {
+    return length;
+  }
+
 private:
   const int width;
   const int length;
